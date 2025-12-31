@@ -18,10 +18,10 @@ const employeePerformance = [
 ]
 
 const channelDistribution = [
-  { name: "Voice", value: 35, fill: "hsl(var(--chart-1))" },
-  { name: "SMS", value: 40, fill: "hsl(var(--chart-2))" },
-  { name: "Email", value: 15, fill: "hsl(var(--chart-3))" },
-  { name: "Social", value: 10, fill: "hsl(var(--chart-4))" },
+  { name: "Voice", value: 35, fill: "#1877F2" },
+  { name: "SMS", value: 40, fill: "#E4405F" },
+  { name: "Email", value: 15, fill: "#0A66C2" },
+  { name: "Social", value: 10, fill: "#1DA1F2" },
 ]
 
 const weeklyTrend = [
@@ -42,10 +42,10 @@ const barChartConfig = {
 
 const pieChartConfig = {
   value: { label: "Percentage" },
-  Voice: { label: "Voice", color: "hsl(var(--chart-1))" },
-  SMS: { label: "SMS", color: "hsl(var(--chart-2))" },
-  Email: { label: "Email", color: "hsl(var(--chart-3))" },
-  Social: { label: "Social", color: "hsl(var(--chart-4))" },
+  Voice: { label: "Voice", color: "#1877F2" },
+  SMS: { label: "SMS", color: "#E4405F" },
+  Email: { label: "Email", color: "#0A66C2" },
+  Social: { label: "Social", color: "#1DA1F2" },
 } satisfies ChartConfig
 
 const lineChartConfig = {
