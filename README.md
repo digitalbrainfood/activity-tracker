@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RingCentral Activity Tracker
+
+A Next.js dashboard application for tracking employee activity across multiple RingCentral communication channels including voice calls, SMS/MMS, email, WhatsApp, and social media platforms.
+
+## Features
+
+- **Dashboard Overview** - Real-time activity metrics and trends
+- **Call Logs** - Track inbound/outbound calls with recordings
+- **Analytics** - Employee performance and channel distribution insights
+- **Employee Management** - View employee status and activity metrics
+- **Voice Calls** - Detailed call monitoring with hourly distribution
+- **Messages** - SMS/MMS conversation tracking
+- **Social Media** - Multi-platform social monitoring (Facebook, Instagram, Twitter, LinkedIn)
+- **WhatsApp Business** - Dedicated WhatsApp conversation management
+- **Email** - Email inbox and tracking
+
+## Tech Stack
+
+- **Framework**: Next.js 16.1.1 with App Router
+- **UI Components**: shadcn/ui (dashboard-01 block)
+- **Styling**: Tailwind CSS v4
+- **Charts**: Recharts
+- **Icons**: Tabler Icons React
+- **TypeScript**: Full type safety
 
 ## Getting Started
 
-First, run the development server:
-
+1. Install dependencies:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Run the development server:
+```bash
+npm run dev
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Structure
 
-## Learn More
+```
+app/
+├── dashboard/
+│   ├── page.tsx              # Main dashboard
+│   ├── call-logs/            # Call logs page
+│   ├── analytics/            # Analytics page
+│   ├── employees/            # Employee directory
+│   ├── voice-calls/          # Voice calls monitoring
+│   ├── messages/             # SMS/MMS messages
+│   ├── social-media/         # Social media tracking
+│   ├── whatsapp/             # WhatsApp conversations
+│   └── email/                # Email management
+components/
+├── ui/                       # shadcn/ui components
+├── app-sidebar.tsx           # Main navigation sidebar
+├── site-header.tsx           # Dashboard header
+├── section-cards.tsx         # Metrics cards
+├── chart-area-interactive.tsx # Interactive charts
+└── data-table.tsx            # Activity data table
+```
 
-To learn more about Next.js, take a look at the following resources:
+## API Integration
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This dashboard is designed to integrate with:
+- **RingCentral Call Log API** - For voice call tracking
+- **RingCentral Message Store API** - For SMS/MMS messages
+- **RingCX Digital API** - For email and social media interactions
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Currently using placeholder data. API keys and integration will be added in future updates.
 
-## Deploy on Vercel
+## License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
