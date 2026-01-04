@@ -14,6 +14,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
 import { Line, LineChart, XAxis, YAxis, CartesianGrid } from "recharts"
 import { IconMessage, IconArrowUp, IconArrowDown, IconSend, IconMessageCircle, IconPhoto } from "@tabler/icons-react"
+import { useMessages } from "@/hooks/use-ringcentral"
+import type { MessageRecord } from "@/lib/types"
 
 const messagesByDay = [
   { day: "Mon", sent: 340, received: 280 },
@@ -128,7 +130,53 @@ function getInitials(name: string) {
   return name.split(" ").map(n => n[0]).join("")
 }
 
+function transformMessage(record: MessageRecord, type: 'sent' | 'received') {
+  const contact = type === 'sent'
+    ? record.to?.[0]?.phoneNumber || 'Unknown'
+    : record.from?.phoneNumber || 'Unknown'
+
+  const name = type === 'sent'
+    ? record.to?.[0]?.name || contact
+    : record.from?.name || contact
+
+  return {
+    id: record.id,
+    contact,
+    name,
+    message: record.subject || 'No content',
+    time: new Date(record.creationTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+    status: record.readStatus === 'Read' ? 'Read' : (record.messageStatus === 'Delivered' ? 'Delivered' : 'Unread'),
+    employee: 'Current User',
+    type: record.type,
+  }
+}
+
 export default function MessagesPage() {
+  const { data: messagesData, loading, error } = useMessages()
+
+  // Transform real data or use placeholder
+  const isConnected = !error && messagesData?.records && messagesData.records.length > 0
+
+  const realSentMessages = messagesData?.records
+    ?.filter(m => m.direction === 'Outbound')
+    .map(m => transformMessage(m, 'sent')) || []
+
+  const realReceivedMessages = messagesData?.records
+    ?.filter(m => m.direction === 'Inbound')
+    .map(m => transformMessage(m, 'received')) || []
+
+  // Use real or placeholder data
+  const displaySentMessages = isConnected ? realSentMessages : sentMessages
+  const displayReceivedMessages = isConnected ? realReceivedMessages : receivedMessages
+  const displayConversations = isConnected ? [...realSentMessages, ...realReceivedMessages].slice(0, 6) : conversations
+
+  // Calculate stats
+  const totalSent = isConnected ? realSentMessages.length : 234
+  const totalReceived = isConnected ? realReceivedMessages.length : 189
+  const unreadCount = isConnected
+    ? messagesData?.records?.filter(m => m.readStatus === 'Unread').length || 0
+    : 12
+
   return (
     <SidebarProvider
       style={
@@ -140,7 +188,7 @@ export default function MessagesPage() {
     >
       <AppSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader />
+        <SiteHeader isConnected={isConnected} />
         <div className="flex flex-1 flex-col gap-4 p-4 lg:p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -156,22 +204,22 @@ export default function MessagesPage() {
           <div className="grid gap-4 md:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardDescription>Sent Today</CardDescription>
+                <CardDescription>Sent</CardDescription>
                 <IconArrowUp className="size-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">234</div>
-                <p className="text-xs text-muted-foreground">+15% from yesterday</p>
+                <div className="text-2xl font-bold">{totalSent}</div>
+                <p className="text-xs text-muted-foreground">{isConnected ? 'Last 30 days' : 'Sample data'}</p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardDescription>Received Today</CardDescription>
+                <CardDescription>Received</CardDescription>
                 <IconArrowDown className="size-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">189</div>
-                <p className="text-xs text-muted-foreground">+8% from yesterday</p>
+                <div className="text-2xl font-bold">{totalReceived}</div>
+                <p className="text-xs text-muted-foreground">{isConnected ? 'Last 30 days' : 'Sample data'}</p>
               </CardContent>
             </Card>
             <Card>
@@ -180,18 +228,18 @@ export default function MessagesPage() {
                 <IconMessageCircle className="size-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-orange-600">12</div>
-                <p className="text-xs text-muted-foreground">Needs attention</p>
+                <div className="text-2xl font-bold text-orange-600">{unreadCount}</div>
+                <p className="text-xs text-muted-foreground">{unreadCount > 0 ? 'Needs attention' : 'All caught up'}</p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardDescription>MMS Sent</CardDescription>
+                <CardDescription>Total Messages</CardDescription>
                 <IconPhoto className="size-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">28</div>
-                <p className="text-xs text-muted-foreground">With attachments</p>
+                <div className="text-2xl font-bold">{totalSent + totalReceived}</div>
+                <p className="text-xs text-muted-foreground">All messages</p>
               </CardContent>
             </Card>
           </div>

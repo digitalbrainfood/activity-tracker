@@ -1,0 +1,35 @@
+import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
+import { getRingCentralSDK } from '@/lib/ringcentral'
+
+export async function GET() {
+  try {
+    const cookieStore = await cookies()
+    const tokenCookie = cookieStore.get('rc_token')
+
+    if (!tokenCookie) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+
+    const tokenData = JSON.parse(tokenCookie.value)
+    const sdk = getRingCentralSDK()
+    const platform = sdk.platform()
+
+    // Set the stored token
+    await platform.auth().setData(tokenData)
+
+    // Fetch call log
+    const response = await platform.get('/restapi/v1.0/account/~/extension/~/call-log', {
+      dateFrom: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // Last 30 days
+      perPage: 100,
+      view: 'Detailed',
+    })
+
+    const data = await response.json()
+
+    return NextResponse.json(data)
+  } catch (error) {
+    console.error('Error fetching call log:', error)
+    return NextResponse.json({ error: 'Failed to fetch call log' }, { status: 500 })
+  }
+}

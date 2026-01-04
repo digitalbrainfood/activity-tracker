@@ -10,7 +10,17 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 
-export function SectionCards() {
+interface SectionCardsProps {
+  callCount?: number
+  messageCount?: number
+  isConnected?: boolean
+}
+
+export function SectionCards({ callCount, messageCount, isConnected }: SectionCardsProps) {
+  // Use real data if connected, otherwise show placeholder data
+  const totalCalls = isConnected && callCount !== undefined ? callCount : 1247
+  const totalMessages = isConnected && messageCount !== undefined ? messageCount : 3892
+
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
       <Card className="@container/card">
@@ -20,7 +30,7 @@ export function SectionCards() {
             Total Calls
           </CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            1,247
+            {totalCalls.toLocaleString()}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
@@ -45,7 +55,7 @@ export function SectionCards() {
             SMS/Text Messages
           </CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            3,892
+            {totalMessages.toLocaleString()}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">

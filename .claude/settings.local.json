@@ -10,7 +10,8 @@
       "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd RingCentral Activity Tracker dashboard\n\n- Initialized shadcn/ui with dashboard-01 block\n- Created comprehensive activity tracking dashboard\n- Implemented 10 dashboard pages:\n  * Main dashboard with metrics and charts\n  * Call logs with recording playback\n  * Analytics with employee performance charts\n  * Employee directory with status tracking\n  * Voice calls monitoring with hourly distribution\n  * SMS/MMS messages with conversation threads\n  * Social media tracking \\(Facebook, Instagram, Twitter, LinkedIn\\)\n  * WhatsApp Business conversation management\n  * Email inbox and tracking\n- Customized navigation sidebar with all working links\n- Added placeholder data for all features\n- Ready for RingCentral API integration\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(npm run dev:*)",
       "Bash(git commit:*)",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(npm install:*)"
     ]
   }
 }

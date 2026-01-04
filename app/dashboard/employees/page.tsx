@@ -1,3 +1,5 @@
+"use client"
+
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import {
@@ -17,6 +19,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { IconPhone, IconMessage, IconBrandFacebook, IconMail, IconUserPlus } from "@tabler/icons-react"
+import { useExtensions } from "@/hooks/use-ringcentral"
+import type { ExtensionRecord } from "@/lib/types"
 
 const employees = [
   {
@@ -116,10 +120,35 @@ function getInitials(name: string) {
   return name.split(" ").map(n => n[0]).join("")
 }
 
+function transformExtension(record: ExtensionRecord) {
+  return {
+    id: record.id,
+    name: record.name || `Extension ${record.extensionNumber}`,
+    email: record.contact?.email || '',
+    extension: record.extensionNumber,
+    department: 'General',
+    status: record.status === 'Enabled' ? 'Active' : (record.status === 'Disabled' ? 'Offline' : 'Away'),
+    callsToday: 0, // Would need separate API call to get activity
+    messagesToday: 0,
+    socialToday: 0,
+    emailsToday: 0,
+    avgTalkTime: '-',
+  }
+}
+
 export default function EmployeesPage() {
-  const activeCount = employees.filter(e => e.status === "Active").length
-  const totalCalls = employees.reduce((sum, e) => sum + e.callsToday, 0)
-  const totalMessages = employees.reduce((sum, e) => sum + e.messagesToday, 0)
+  const { data: extensionsData, loading, error } = useExtensions()
+
+  // Transform real data or use placeholder
+  const isConnected = !error && extensionsData?.records && extensionsData.records.length > 0
+
+  const displayEmployees = isConnected
+    ? extensionsData!.records.map(transformExtension)
+    : employees
+
+  const activeCount = displayEmployees.filter(e => e.status === "Active").length
+  const totalCalls = displayEmployees.reduce((sum, e) => sum + e.callsToday, 0)
+  const totalMessages = displayEmployees.reduce((sum, e) => sum + e.messagesToday, 0)
 
   return (
     <SidebarProvider
@@ -132,7 +161,7 @@ export default function EmployeesPage() {
     >
       <AppSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader />
+        <SiteHeader isConnected={isConnected} />
         <div className="flex flex-1 flex-col gap-4 p-4 lg:p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -149,7 +178,7 @@ export default function EmployeesPage() {
             <Card>
               <CardHeader className="pb-2">
                 <CardDescription>Total Employees</CardDescription>
-                <CardTitle className="text-3xl">{employees.length}</CardTitle>
+                <CardTitle className="text-3xl">{displayEmployees.length}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-xs text-muted-foreground">{activeCount} currently active</p>
@@ -213,7 +242,7 @@ export default function EmployeesPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {employees.map((employee) => (
+                  {displayEmployees.map((employee) => (
                     <TableRow key={employee.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">

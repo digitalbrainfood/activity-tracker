@@ -72,7 +72,7 @@ import {
 } from "@/components/ui/tabs"
 
 export const schema = z.object({
-  id: z.number(),
+  id: z.union([z.number(), z.string()]),
   employee: z.string(),
   extension: z.string(),
   channel: z.string(),
