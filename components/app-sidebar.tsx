@@ -9,9 +9,6 @@ import {
   IconPhone,
   IconPhoneCall,
   IconUsers,
-  IconBrandFacebook,
-  IconBrandWhatsapp,
-  IconMail,
 } from "@tabler/icons-react"
 
 import { NavDocuments } from "@/components/nav-documents"
@@ -65,21 +62,6 @@ const data = {
       name: "Messages",
       url: "/dashboard/messages",
       icon: IconMessage,
-    },
-    {
-      name: "Social Media",
-      url: "/dashboard/social-media",
-      icon: IconBrandFacebook,
-    },
-    {
-      name: "WhatsApp",
-      url: "/dashboard/whatsapp",
-      icon: IconBrandWhatsapp,
-    },
-    {
-      name: "Email",
-      url: "/dashboard/email",
-      icon: IconMail,
     },
   ],
 }

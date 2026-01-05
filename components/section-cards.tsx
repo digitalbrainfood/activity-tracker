@@ -1,4 +1,4 @@
-import { IconTrendingDown, IconTrendingUp, IconPhone, IconMessage, IconBrandFacebook, IconClock } from "@tabler/icons-react"
+import { IconTrendingUp, IconPhone, IconMessage, IconClock, IconActivity } from "@tabler/icons-react"
 
 import { Badge } from "@/components/ui/badge"
 import {
@@ -20,6 +20,7 @@ export function SectionCards({ callCount, messageCount, isConnected }: SectionCa
   // Use real data if connected, otherwise show placeholder data
   const totalCalls = isConnected && callCount !== undefined ? callCount : 1247
   const totalMessages = isConnected && messageCount !== undefined ? messageCount : 3892
+  const totalActivity = totalCalls + totalMessages
 
   return (
     <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 px-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
@@ -41,10 +42,10 @@ export function SectionCards({ callCount, messageCount, isConnected }: SectionCa
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            842 outbound, 405 inbound <IconTrendingUp className="size-4" />
+            {isConnected ? 'From RingCentral' : '842 outbound, 405 inbound'} <IconTrendingUp className="size-4" />
           </div>
           <div className="text-muted-foreground">
-            vs. 1,055 calls last week
+            {isConnected ? 'Last 30 days' : 'vs. 1,055 calls last week'}
           </div>
         </CardFooter>
       </Card>
@@ -66,35 +67,35 @@ export function SectionCards({ callCount, messageCount, isConnected }: SectionCa
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            2,341 sent, 1,551 received <IconTrendingUp className="size-4" />
+            {isConnected ? 'From RingCentral' : '2,341 sent, 1,551 received'} <IconTrendingUp className="size-4" />
           </div>
           <div className="text-muted-foreground">
-            vs. 3,126 messages last week
+            {isConnected ? 'Last 30 days' : 'vs. 3,126 messages last week'}
           </div>
         </CardFooter>
       </Card>
       <Card className="@container/card">
         <CardHeader>
           <CardDescription className="flex items-center gap-2">
-            <IconBrandFacebook className="size-4" />
-            Social Media
+            <IconActivity className="size-4" />
+            Total Activity
           </CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            567
+            {totalActivity.toLocaleString()}
           </CardTitle>
           <CardAction>
             <Badge variant="outline">
-              <IconTrendingDown />
-              -8.3%
+              <IconTrendingUp />
+              +20.1%
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
-            Facebook, WhatsApp, Instagram <IconTrendingDown className="size-4" />
+            Calls + Messages combined <IconTrendingUp className="size-4" />
           </div>
           <div className="text-muted-foreground">
-            vs. 618 interactions last week
+            {isConnected ? 'Last 30 days' : 'vs. 4,181 last week'}
           </div>
         </CardFooter>
       </Card>
