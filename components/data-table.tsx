@@ -12,12 +12,6 @@ import {
   IconLayoutColumns,
   IconPhone,
   IconMessage,
-  IconBrandFacebook,
-  IconBrandWhatsapp,
-  IconBrandInstagram,
-  IconBrandTwitter,
-  IconBrandLinkedin,
-  IconMail,
   IconX,
   IconArrowUp,
   IconArrowDown,
@@ -89,18 +83,6 @@ function getChannelIcon(channel: string) {
       return <IconPhone className="size-4" />
     case "SMS":
       return <IconMessage className="size-4" />
-    case "Facebook":
-      return <IconBrandFacebook className="size-4" />
-    case "WhatsApp":
-      return <IconBrandWhatsapp className="size-4" />
-    case "Instagram":
-      return <IconBrandInstagram className="size-4" />
-    case "Twitter":
-      return <IconBrandTwitter className="size-4" />
-    case "LinkedIn":
-      return <IconBrandLinkedin className="size-4" />
-    case "Email":
-      return <IconMail className="size-4" />
     default:
       return <IconMessage className="size-4" />
   }
@@ -168,7 +150,20 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
   },
   {
     accessorKey: "employee",
-    header: "Employee",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        className="-ml-4"
+      >
+        Employee
+        {column.getIsSorted() === "asc" ? (
+          <IconArrowUp className="ml-2 size-4" />
+        ) : column.getIsSorted() === "desc" ? (
+          <IconArrowDown className="ml-2 size-4" />
+        ) : null}
+      </Button>
+    ),
     cell: ({ row }) => (
       <div>
         <div className="font-medium">{row.original.employee}</div>
@@ -261,7 +256,7 @@ export function DataTable({
 }: {
   data: z.infer<typeof schema>[]
 }) {
-  const [data] = React.useState(() => initialData)
+  const [activeTab, setActiveTab] = React.useState("all")
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
@@ -274,8 +269,23 @@ export function DataTable({
     pageSize: 10,
   })
 
+  // Filter data based on active tab
+  const filteredData = React.useMemo(() => {
+    if (activeTab === "calls") {
+      return initialData.filter(item => item.channel === "Voice")
+    }
+    if (activeTab === "messages") {
+      return initialData.filter(item => item.channel === "SMS")
+    }
+    return initialData
+  }, [initialData, activeTab])
+
+  // Count for badges
+  const callsCount = initialData.filter(item => item.channel === "Voice").length
+  const messagesCount = initialData.filter(item => item.channel === "SMS").length
+
   const table = useReactTable({
-    data,
+    data: filteredData,
     columns,
     state: {
       sorting,
@@ -302,13 +312,15 @@ export function DataTable({
   return (
     <Tabs
       defaultValue="all"
+      value={activeTab}
+      onValueChange={setActiveTab}
       className="w-full flex-col justify-start gap-6"
     >
       <div className="flex items-center justify-between px-4 lg:px-6">
         <Label htmlFor="view-selector" className="sr-only">
           View
         </Label>
-        <Select defaultValue="all">
+        <Select value={activeTab} onValueChange={setActiveTab}>
           <SelectTrigger
             className="flex w-fit @4xl/main:hidden"
             size="sm"
@@ -318,20 +330,18 @@ export function DataTable({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Activity</SelectItem>
-            <SelectItem value="calls">Calls Only</SelectItem>
-            <SelectItem value="messages">Messages Only</SelectItem>
-            <SelectItem value="social">Social Media</SelectItem>
+            <SelectItem value="calls">Calls Only ({callsCount})</SelectItem>
+            <SelectItem value="messages">Messages Only ({messagesCount})</SelectItem>
           </SelectContent>
         </Select>
         <TabsList className="**:data-[slot=badge]:bg-muted-foreground/30 hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1 @4xl/main:flex">
           <TabsTrigger value="all">All Activity</TabsTrigger>
           <TabsTrigger value="calls">
-            Calls <Badge variant="secondary">12</Badge>
+            Calls <Badge variant="secondary">{callsCount}</Badge>
           </TabsTrigger>
           <TabsTrigger value="messages">
-            Messages <Badge variant="secondary">8</Badge>
+            Messages <Badge variant="secondary">{messagesCount}</Badge>
           </TabsTrigger>
-          <TabsTrigger value="social">Social Media</TabsTrigger>
         </TabsList>
         <div className="flex items-center gap-2">
           <DropdownMenu>
@@ -502,23 +512,178 @@ export function DataTable({
       </TabsContent>
       <TabsContent
         value="calls"
-        className="flex flex-col px-4 lg:px-6"
+        className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
       >
-        <div className="aspect-video w-full flex-1 rounded-lg border border-dashed flex items-center justify-center text-muted-foreground">
-          Calls activity view - Connect RingCentral API for live data
+        <div className="overflow-hidden rounded-lg border">
+          <Table>
+            <TableHeader className="bg-muted sticky top-0 z-10">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id} colSpan={header.colSpan}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    )
+                  })}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    No call records found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
-      </TabsContent>
-      <TabsContent value="messages" className="flex flex-col px-4 lg:px-6">
-        <div className="aspect-video w-full flex-1 rounded-lg border border-dashed flex items-center justify-center text-muted-foreground">
-          Messages activity view - Connect RingCentral API for live data
+        <div className="flex items-center justify-between px-4">
+          <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
+            {table.getFilteredRowModel().rows.length} call record(s)
+          </div>
+          <div className="flex w-full items-center gap-8 lg:w-fit">
+            <div className="flex w-fit items-center justify-center text-sm font-medium">
+              Page {table.getState().pagination.pageIndex + 1} of{" "}
+              {table.getPageCount() || 1}
+            </div>
+            <div className="ml-auto flex items-center gap-2 lg:ml-0">
+              <Button
+                variant="outline"
+                className="size-8"
+                size="icon"
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+              >
+                <span className="sr-only">Go to previous page</span>
+                <IconChevronLeft />
+              </Button>
+              <Button
+                variant="outline"
+                className="size-8"
+                size="icon"
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+              >
+                <span className="sr-only">Go to next page</span>
+                <IconChevronRight />
+              </Button>
+            </div>
+          </div>
         </div>
       </TabsContent>
       <TabsContent
-        value="social"
-        className="flex flex-col px-4 lg:px-6"
+        value="messages"
+        className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
       >
-        <div className="aspect-video w-full flex-1 rounded-lg border border-dashed flex items-center justify-center text-muted-foreground">
-          Social media activity view - Connect RingCX API for live data
+        <div className="overflow-hidden rounded-lg border">
+          <Table>
+            <TableHeader className="bg-muted sticky top-0 z-10">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id} colSpan={header.colSpan}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    )
+                  })}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    No message records found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+        <div className="flex items-center justify-between px-4">
+          <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
+            {table.getFilteredRowModel().rows.length} message record(s)
+          </div>
+          <div className="flex w-full items-center gap-8 lg:w-fit">
+            <div className="flex w-fit items-center justify-center text-sm font-medium">
+              Page {table.getState().pagination.pageIndex + 1} of{" "}
+              {table.getPageCount() || 1}
+            </div>
+            <div className="ml-auto flex items-center gap-2 lg:ml-0">
+              <Button
+                variant="outline"
+                className="size-8"
+                size="icon"
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+              >
+                <span className="sr-only">Go to previous page</span>
+                <IconChevronLeft />
+              </Button>
+              <Button
+                variant="outline"
+                className="size-8"
+                size="icon"
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+              >
+                <span className="sr-only">Go to next page</span>
+                <IconChevronRight />
+              </Button>
+            </div>
+          </div>
         </div>
       </TabsContent>
     </Tabs>

@@ -18,8 +18,8 @@ export async function GET() {
     // Set the stored token
     await platform.auth().setData(tokenData)
 
-    // Fetch call log
-    const response = await platform.get('/restapi/v1.0/account/~/extension/~/call-log', {
+    // Fetch call log for ALL extensions (account level)
+    const response = await platform.get('/restapi/v1.0/account/~/call-log', {
       dateFrom: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // Last 30 days
       perPage: 100,
       view: 'Detailed',
@@ -27,7 +27,25 @@ export async function GET() {
 
     const data = await response.json()
 
-    return NextResponse.json(data)
+    // Also fetch extensions to map extension IDs to names
+    const extResponse = await platform.get('/restapi/v1.0/account/~/extension', {
+      type: 'User',
+      status: 'Enabled',
+    })
+    const extData = await extResponse.json()
+
+    // Create a map of extension ID to name
+    const extensionMap: Record<string, { name: string; extensionNumber: string }> = {}
+    if (extData.records) {
+      for (const ext of extData.records) {
+        extensionMap[ext.id] = {
+          name: ext.name || `Ext ${ext.extensionNumber}`,
+          extensionNumber: ext.extensionNumber || '',
+        }
+      }
+    }
+
+    return NextResponse.json({ ...data, extensionMap })
   } catch (error) {
     console.error('Error fetching call log:', error)
     return NextResponse.json({ error: 'Failed to fetch call log' }, { status: 500 })

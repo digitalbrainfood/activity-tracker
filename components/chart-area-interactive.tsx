@@ -33,31 +33,31 @@ import {
 export const description = "Employee activity chart"
 
 const chartData = [
-  { date: "2025-12-01", calls: 45, messages: 120, social: 23 },
-  { date: "2025-12-02", calls: 52, messages: 98, social: 31 },
-  { date: "2025-12-03", calls: 38, messages: 142, social: 18 },
-  { date: "2025-12-04", calls: 61, messages: 156, social: 42 },
-  { date: "2025-12-05", calls: 55, messages: 134, social: 29 },
-  { date: "2025-12-06", calls: 28, messages: 67, social: 15 },
-  { date: "2025-12-07", calls: 22, messages: 45, social: 12 },
-  { date: "2025-12-08", calls: 48, messages: 128, social: 35 },
-  { date: "2025-12-09", calls: 59, messages: 147, social: 28 },
-  { date: "2025-12-10", calls: 43, messages: 112, social: 41 },
-  { date: "2025-12-11", calls: 67, messages: 168, social: 33 },
-  { date: "2025-12-12", calls: 54, messages: 139, social: 26 },
-  { date: "2025-12-13", calls: 31, messages: 78, social: 19 },
-  { date: "2025-12-14", calls: 25, messages: 52, social: 14 },
-  { date: "2025-12-15", calls: 51, messages: 131, social: 37 },
-  { date: "2025-12-16", calls: 63, messages: 159, social: 44 },
-  { date: "2025-12-17", calls: 47, messages: 118, social: 29 },
-  { date: "2025-12-18", calls: 72, messages: 183, social: 51 },
-  { date: "2025-12-19", calls: 58, messages: 145, social: 38 },
-  { date: "2025-12-20", calls: 34, messages: 89, social: 21 },
-  { date: "2025-12-21", calls: 27, messages: 61, social: 16 },
-  { date: "2025-12-22", calls: 49, messages: 124, social: 32 },
-  { date: "2025-12-23", calls: 56, messages: 152, social: 39 },
-  { date: "2025-12-24", calls: 41, messages: 108, social: 24 },
-  { date: "2025-12-25", calls: 18, messages: 42, social: 11 },
+  { date: "2025-12-01", calls: 45, messages: 120 },
+  { date: "2025-12-02", calls: 52, messages: 98 },
+  { date: "2025-12-03", calls: 38, messages: 142 },
+  { date: "2025-12-04", calls: 61, messages: 156 },
+  { date: "2025-12-05", calls: 55, messages: 134 },
+  { date: "2025-12-06", calls: 28, messages: 67 },
+  { date: "2025-12-07", calls: 22, messages: 45 },
+  { date: "2025-12-08", calls: 48, messages: 128 },
+  { date: "2025-12-09", calls: 59, messages: 147 },
+  { date: "2025-12-10", calls: 43, messages: 112 },
+  { date: "2025-12-11", calls: 67, messages: 168 },
+  { date: "2025-12-12", calls: 54, messages: 139 },
+  { date: "2025-12-13", calls: 31, messages: 78 },
+  { date: "2025-12-14", calls: 25, messages: 52 },
+  { date: "2025-12-15", calls: 51, messages: 131 },
+  { date: "2025-12-16", calls: 63, messages: 159 },
+  { date: "2025-12-17", calls: 47, messages: 118 },
+  { date: "2025-12-18", calls: 72, messages: 183 },
+  { date: "2025-12-19", calls: 58, messages: 145 },
+  { date: "2025-12-20", calls: 34, messages: 89 },
+  { date: "2025-12-21", calls: 27, messages: 61 },
+  { date: "2025-12-22", calls: 49, messages: 124 },
+  { date: "2025-12-23", calls: 56, messages: 152 },
+  { date: "2025-12-24", calls: 41, messages: 108 },
+  { date: "2025-12-25", calls: 18, messages: 42 },
 ]
 
 const chartConfig = {
@@ -71,10 +71,6 @@ const chartConfig = {
   messages: {
     label: "Messages",
     color: "hsl(var(--chart-2))",
-  },
-  social: {
-    label: "Social",
-    color: "hsl(var(--chart-3))",
   },
 } satisfies ChartConfig
 
@@ -177,18 +173,6 @@ export function ChartAreaInteractive() {
                   stopOpacity={0.1}
                 />
               </linearGradient>
-              <linearGradient id="fillSocial" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-social)"
-                  stopOpacity={0.8}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-social)"
-                  stopOpacity={0.1}
-                />
-              </linearGradient>
             </defs>
             <CartesianGrid vertical={false} />
             <XAxis
@@ -218,13 +202,6 @@ export function ChartAreaInteractive() {
                   indicator="dot"
                 />
               }
-            />
-            <Area
-              dataKey="social"
-              type="natural"
-              fill="url(#fillSocial)"
-              stroke="var(--color-social)"
-              stackId="a"
             />
             <Area
               dataKey="messages"

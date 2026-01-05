@@ -102,6 +102,7 @@ export function transformToActivityRecords(
   messages: MessageResponse | null
 ): ActivityRecord[] {
   const activities: ActivityRecord[] = []
+  const extensionMap = callLog?.extensionMap || {}
 
   // Transform call log records
   if (callLog?.records) {
@@ -118,10 +119,16 @@ export function transformToActivityRecords(
       if (call.result === 'Missed') status = 'Missed'
       else if (call.result === 'Voicemail') status = 'Pending'
 
+      // Get employee name from extension map
+      const extId = call.extension?.id || ''
+      const extInfo = extensionMap[extId]
+      const employeeName = extInfo?.name || 'Unknown User'
+      const extensionNumber = extInfo?.extensionNumber || call.extension?.id || '---'
+
       activities.push({
         id: call.id,
-        employee: 'Current User', // Would need extension lookup for multi-user
-        extension: call.extension?.id || '101',
+        employee: employeeName,
+        extension: extensionNumber,
         channel: 'Voice',
         direction: call.direction,
         status,
@@ -143,10 +150,15 @@ export function transformToActivityRecords(
       if (msg.messageStatus === 'Queued') status = 'Pending'
       else if (msg.messageStatus === 'SendingFailed' || msg.messageStatus === 'DeliveryFailed') status = 'Missed'
 
+      // For messages, use from name for outbound
+      const employeeName = msg.direction === 'Outbound'
+        ? (msg.from?.name || 'Unknown User')
+        : 'Received'
+
       activities.push({
         id: msg.id,
-        employee: 'Current User',
-        extension: '101',
+        employee: employeeName,
+        extension: '---',
         channel: 'SMS',
         direction: msg.direction,
         status,

@@ -45,6 +45,7 @@ export interface CallLogResponse {
     previousPage?: { uri: string }
     lastPage?: { uri: string }
   }
+  extensionMap?: Record<string, { name: string; extensionNumber: string }>
 }
 
 export interface MessageRecord {
@@ -114,4 +115,29 @@ export interface ActivityRecord {
   contact: string
   duration: string
   timestamp: string
+}
+
+// Tally/Tracking types
+export interface TallyEntry {
+  id: string
+  day: string
+  textNewRecruits: number
+  callsToRecruits: number
+  textInterviews: number
+  instaDMs: number
+  initialInterviews: number
+}
+
+export interface WeekData {
+  id: string
+  weekNumber: number
+  startDate: string
+  endDate: string
+  entries: TallyEntry[]
+}
+
+export interface EmployeeTally {
+  id: string
+  employeeName: string
+  weeks: WeekData[]
 }

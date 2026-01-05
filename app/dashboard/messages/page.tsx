@@ -131,18 +131,20 @@ function getInitials(name: string) {
 }
 
 function transformMessage(record: MessageRecord, type: 'sent' | 'received') {
-  const contact = type === 'sent'
-    ? record.to?.[0]?.phoneNumber || 'Unknown'
-    : record.from?.phoneNumber || 'Unknown'
+  const toContact = record.to?.[0]?.phoneNumber || 'Unknown'
+  const fromContact = record.from?.phoneNumber || 'Unknown'
+  const contact = type === 'sent' ? toContact : fromContact
 
-  const name = type === 'sent'
-    ? record.to?.[0]?.name || contact
-    : record.from?.name || contact
+  const toName = record.to?.[0]?.name || toContact
+  const fromName = record.from?.name || fromContact
+  const name = type === 'sent' ? toName : fromName
 
   return {
     id: record.id,
     contact,
     name,
+    to: type === 'sent' ? toContact : 'Current User',
+    from: type === 'sent' ? 'Current User' : fromContact,
     message: record.subject || 'No content',
     time: new Date(record.creationTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
     status: record.readStatus === 'Read' ? 'Read' : (record.messageStatus === 'Delivered' ? 'Delivered' : 'Unread'),
@@ -168,7 +170,13 @@ export default function MessagesPage() {
   // Use real or placeholder data
   const displaySentMessages = isConnected ? realSentMessages : sentMessages
   const displayReceivedMessages = isConnected ? realReceivedMessages : receivedMessages
-  const displayConversations = isConnected ? [...realSentMessages, ...realReceivedMessages].slice(0, 6) : conversations
+  const displayConversations = isConnected
+    ? [...realSentMessages, ...realReceivedMessages].slice(0, 6).map(msg => ({
+        ...msg,
+        lastMessage: msg.message,
+        unread: 0,
+      }))
+    : conversations
 
   // Calculate stats
   const totalSent = isConnected ? realSentMessages.length : 234
@@ -286,7 +294,7 @@ export default function MessagesPage() {
                   <CardDescription>Active message threads</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {conversations.map((conv) => (
+                  {displayConversations.map((conv) => (
                     <div key={conv.id} className="flex items-start gap-4 p-4 rounded-lg border hover:bg-muted/50 cursor-pointer">
                       <Avatar>
                         <AvatarFallback>{getInitials(conv.name)}</AvatarFallback>
@@ -322,7 +330,7 @@ export default function MessagesPage() {
                   <CardDescription>Messages sent today</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {sentMessages.map((msg) => (
+                  {displaySentMessages.map((msg) => (
                     <div key={msg.id} className="flex items-start gap-4 p-4 rounded-lg border">
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
@@ -349,7 +357,7 @@ export default function MessagesPage() {
                   <CardDescription>Messages received today</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {receivedMessages.map((msg) => (
+                  {displayReceivedMessages.map((msg) => (
                     <div key={msg.id} className="flex items-start gap-4 p-4 rounded-lg border">
                       <div className="flex-1">
                         <div className="flex items-center justify-between">

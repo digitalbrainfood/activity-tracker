@@ -3,6 +3,7 @@
 import * as React from "react"
 import {
   IconChartBar,
+  IconClipboardList,
   IconDashboard,
   IconHeadset,
   IconMessage,
@@ -35,6 +36,11 @@ const data = {
       title: "Dashboard",
       url: "/dashboard",
       icon: IconDashboard,
+    },
+    {
+      title: "Activity Tally",
+      url: "/dashboard/tally",
+      icon: IconClipboardList,
     },
     {
       title: "Call Logs",
