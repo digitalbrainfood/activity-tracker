@@ -12,7 +12,7 @@ export function RingCentralOverlay({ isConnected, isLoading }: RingCentralOverla
   if (isConnected || isLoading) return null
 
   const handleConnect = () => {
-    window.location.href = '/api/ringcentral/auth'
+    window.location.href = '/api/auth/ringcentral'
   }
 
   return (
