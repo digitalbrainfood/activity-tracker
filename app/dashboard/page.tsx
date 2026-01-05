@@ -6,6 +6,7 @@ import { ChartAreaInteractive } from "@/components/chart-area-interactive"
 import { DataTable } from "@/components/data-table"
 import { SectionCards } from "@/components/section-cards"
 import { SiteHeader } from "@/components/site-header"
+import { RingCentralOverlay } from "@/components/ringcentral-overlay"
 import {
   SidebarInset,
   SidebarProvider,
@@ -13,35 +14,26 @@ import {
 import { useCallLog, useMessages, transformToActivityRecords } from "@/hooks/use-ringcentral"
 import type { ActivityRecord } from "@/lib/types"
 
-import placeholderData from "./data.json"
-
 export default function Page() {
   const { data: callLogData, loading: callLogLoading, error: callLogError } = useCallLog()
   const { data: messagesData, loading: messagesLoading, error: messagesError } = useMessages()
-  const [activityData, setActivityData] = useState<ActivityRecord[]>(placeholderData as unknown as ActivityRecord[])
+  const [activityData, setActivityData] = useState<ActivityRecord[]>([])
   const [isConnected, setIsConnected] = useState(false)
 
+  const isLoading = callLogLoading || messagesLoading
+
   useEffect(() => {
-    // Check if we have real data
-    if (!callLogLoading && !messagesLoading) {
+    if (!isLoading) {
       if (callLogError === 'Not connected' || messagesError === 'Not connected') {
-        // Use placeholder data when not connected
-        setActivityData(placeholderData as unknown as ActivityRecord[])
+        setActivityData([])
         setIsConnected(false)
       } else if (callLogData || messagesData) {
-        // Transform and use real data
         const realData = transformToActivityRecords(callLogData, messagesData)
-        if (realData.length > 0) {
-          setActivityData(realData)
-          setIsConnected(true)
-        } else {
-          // Use placeholder if no real data available
-          setActivityData(placeholderData as unknown as ActivityRecord[])
-          setIsConnected(false)
-        }
+        setActivityData(realData)
+        setIsConnected(true)
       }
     }
-  }, [callLogData, messagesData, callLogLoading, messagesLoading, callLogError, messagesError])
+  }, [callLogData, messagesData, isLoading, callLogError, messagesError])
 
   return (
     <SidebarProvider
@@ -71,6 +63,7 @@ export default function Page() {
           </div>
         </div>
       </SidebarInset>
+      <RingCentralOverlay isConnected={isConnected} isLoading={isLoading} />
     </SidebarProvider>
   )
 }

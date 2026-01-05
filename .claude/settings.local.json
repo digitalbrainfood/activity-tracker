@@ -12,7 +12,8 @@
       "Bash(git commit:*)",
       "Bash(git push)",
       "Bash(npm install:*)",
-      "Bash(npx shadcn@latest add dialog --yes)"
+      "Bash(npx shadcn@latest add dialog --yes)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd login system with database-backed auth and account settings\n\n- Add login page with simple password authentication for Susan \\(admin\\) and Amelia \\(employee\\)\n- Implement JWT-based auth with HTTP-only cookies stored for 7 days\n- Create account settings page for updating email and password\n- Connect auth to Vercel Postgres database for persistent credential storage\n- Add activity tally page for employee tracking\n- Fix employee names in call logs by fetching account-level data with extension mapping\n- Update data table tabs to properly filter calls vs messages\n- Remove social media channels, focus on Voice and SMS only\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   }
 }

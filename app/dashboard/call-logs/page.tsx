@@ -2,6 +2,7 @@
 
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
+import { RingCentralOverlay } from "@/components/ringcentral-overlay"
 import {
   SidebarInset,
   SidebarProvider,
@@ -19,23 +20,9 @@ import {
 } from "@/components/ui/table"
 import { IconArrowUp, IconArrowDown, IconPlayerPlay, IconDownload } from "@tabler/icons-react"
 import { useCallLog } from "@/hooks/use-ringcentral"
-import type { CallLogRecord } from "@/lib/types"
+import type { CallLogRecord, CallLogResponse } from "@/lib/types"
 
-const placeholderCallLogs = [
-  { id: "1", employee: "Sarah Johnson", extension: "101", direction: "Outbound", contact: "+1 (555) 234-5678", duration: "4:32", status: "Completed", timestamp: "2025-12-25 09:15:00", hasRecording: true },
-  { id: "2", employee: "Mike Chen", extension: "102", direction: "Outbound", contact: "+1 (555) 678-9012", duration: "12:45", status: "Completed", timestamp: "2025-12-25 10:00:00", hasRecording: true },
-  { id: "3", employee: "Sarah Johnson", extension: "101", direction: "Inbound", contact: "+1 (555) 456-7890", duration: "-", status: "Missed", timestamp: "2025-12-25 09:30:00", hasRecording: false },
-  { id: "4", employee: "James Wilson", extension: "104", direction: "Outbound", contact: "+1 (555) 890-1234", duration: "8:20", status: "Completed", timestamp: "2025-12-25 10:45:00", hasRecording: true },
-  { id: "5", employee: "Sarah Johnson", extension: "101", direction: "Outbound", contact: "+1 (555) 901-2345", duration: "15:10", status: "Completed", timestamp: "2025-12-25 11:15:00", hasRecording: true },
-  { id: "6", employee: "Mike Chen", extension: "102", direction: "Inbound", contact: "+1 (555) 123-4567", duration: "6:45", status: "Completed", timestamp: "2025-12-25 12:15:00", hasRecording: true },
-  { id: "7", employee: "Emily Davis", extension: "103", direction: "Outbound", contact: "+1 (555) 234-5679", duration: "-", status: "No Answer", timestamp: "2025-12-25 12:30:00", hasRecording: false },
-  { id: "8", employee: "Sarah Johnson", extension: "101", direction: "Outbound", contact: "+1 (555) 456-7891", duration: "22:30", status: "Completed", timestamp: "2025-12-25 13:00:00", hasRecording: true },
-  { id: "9", employee: "James Wilson", extension: "104", direction: "Outbound", contact: "+1 (555) 678-9013", duration: "9:15", status: "Completed", timestamp: "2025-12-25 13:45:00", hasRecording: true },
-  { id: "10", employee: "Mike Chen", extension: "102", direction: "Outbound", contact: "+1 (555) 789-0124", duration: "-", status: "Busy", timestamp: "2025-12-25 14:15:00", hasRecording: false },
-  { id: "11", employee: "James Wilson", extension: "104", direction: "Inbound", contact: "+1 (555) 890-1235", duration: "18:45", status: "Completed", timestamp: "2025-12-25 14:45:00", hasRecording: true },
-]
-
-function transformCallLog(record: CallLogRecord) {
+function transformCallLog(record: CallLogRecord, callLogData: CallLogResponse | null) {
   const contact = record.direction === 'Inbound'
     ? record.from?.name || record.from?.phoneNumber || 'Unknown'
     : record.to?.name || record.to?.phoneNumber || 'Unknown'
@@ -49,10 +36,17 @@ function transformCallLog(record: CallLogRecord) {
   else if (record.result === 'Voicemail') status = 'Voicemail'
   else if (record.result === 'Rejected') status = 'Busy'
 
+  // Get employee name from extension map
+  const extensionMap = callLogData?.extensionMap || {}
+  const extId = record.extension?.id || ''
+  const extInfo = extensionMap[extId]
+  const employeeName = extInfo?.name || 'Unknown User'
+  const extensionNumber = extInfo?.extensionNumber || record.extension?.id || '---'
+
   return {
     id: record.id,
-    employee: 'Current User',
-    extension: record.extension?.id || '101',
+    employee: employeeName,
+    extension: extensionNumber,
     direction: record.direction,
     contact,
     duration,
@@ -78,12 +72,12 @@ function getStatusBadge(status: string) {
 export default function CallLogsPage() {
   const { data: callLogData, loading, error } = useCallLog()
 
-  // Transform real data or use placeholder
-  const callLogs = callLogData?.records
-    ? callLogData.records.map(transformCallLog)
-    : placeholderCallLogs
+  const isConnected = !error && error !== 'Not connected' && !!(callLogData?.records && callLogData.records.length > 0)
 
-  const isConnected = !error && callLogData?.records && callLogData.records.length > 0
+  // Transform real data only when connected
+  const callLogs = callLogData?.records
+    ? callLogData.records.map(record => transformCallLog(record, callLogData))
+    : []
 
   // Calculate stats
   const totalCalls = callLogs.length
@@ -122,7 +116,7 @@ export default function CallLogsPage() {
                 <CardTitle className="text-3xl">{totalCalls}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-xs text-muted-foreground">{isConnected ? 'Last 30 days' : 'Sample data'}</p>
+                <p className="text-xs text-muted-foreground">{isConnected ? 'Last 30 days' : 'Connect RingCentral'}</p>
               </CardContent>
             </Card>
             <Card>
@@ -206,6 +200,7 @@ export default function CallLogsPage() {
           </Card>
         </div>
       </SidebarInset>
+      <RingCentralOverlay isConnected={isConnected} isLoading={loading} />
     </SidebarProvider>
   )
 }

@@ -2,6 +2,7 @@
 
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
+import { RingCentralOverlay } from "@/components/ringcentral-overlay"
 import {
   SidebarInset,
   SidebarProvider,
@@ -11,105 +12,9 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
-import { Line, LineChart, XAxis, YAxis, CartesianGrid } from "recharts"
 import { IconMessage, IconArrowUp, IconArrowDown, IconSend, IconMessageCircle, IconPhoto } from "@tabler/icons-react"
 import { useMessages } from "@/hooks/use-ringcentral"
 import type { MessageRecord } from "@/lib/types"
-
-const messagesByDay = [
-  { day: "Mon", sent: 340, received: 280 },
-  { day: "Tue", sent: 380, received: 320 },
-  { day: "Wed", sent: 290, received: 250 },
-  { day: "Thu", sent: 420, received: 360 },
-  { day: "Fri", sent: 390, received: 340 },
-  { day: "Sat", sent: 120, received: 90 },
-  { day: "Sun", sent: 85, received: 60 },
-]
-
-const chartConfig = {
-  sent: { label: "Sent", color: "hsl(var(--chart-1))" },
-  received: { label: "Received", color: "hsl(var(--chart-2))" },
-} satisfies ChartConfig
-
-const conversations = [
-  {
-    id: 1,
-    contact: "+1 (555) 123-4567",
-    name: "John Smith",
-    lastMessage: "Thanks for the follow-up! I'll review the proposal and get back to you by Friday.",
-    time: "2:45 PM",
-    unread: 0,
-    employee: "Sarah Johnson",
-    type: "SMS"
-  },
-  {
-    id: 2,
-    contact: "+1 (555) 234-5678",
-    name: "Jane Doe",
-    lastMessage: "Can you send me the updated pricing sheet?",
-    time: "2:30 PM",
-    unread: 2,
-    employee: "Mike Chen",
-    type: "SMS"
-  },
-  {
-    id: 3,
-    contact: "+1 (555) 345-6789",
-    name: "Bob Wilson",
-    lastMessage: "Perfect, I'll see you at 3pm tomorrow.",
-    time: "1:15 PM",
-    unread: 0,
-    employee: "Emily Davis",
-    type: "MMS"
-  },
-  {
-    id: 4,
-    contact: "+1 (555) 456-7890",
-    name: "Alice Brown",
-    lastMessage: "The demo went great! Let's schedule a follow-up call.",
-    time: "12:30 PM",
-    unread: 1,
-    employee: "James Wilson",
-    type: "SMS"
-  },
-  {
-    id: 5,
-    contact: "+1 (555) 567-8901",
-    name: "Charlie Davis",
-    lastMessage: "I've attached the contract for your review.",
-    time: "11:45 AM",
-    unread: 0,
-    employee: "Sarah Johnson",
-    type: "MMS"
-  },
-  {
-    id: 6,
-    contact: "+1 (555) 678-9012",
-    name: "Diana Lee",
-    lastMessage: "Thank you for your patience. We're processing your order now.",
-    time: "10:30 AM",
-    unread: 0,
-    employee: "Lisa Wong",
-    type: "SMS"
-  },
-]
-
-const sentMessages = [
-  { id: 1, to: "+1 (555) 987-6543", from: "Sarah Johnson", message: "Hi! Just following up on our conversation...", time: "3:00 PM", status: "Delivered" },
-  { id: 2, to: "+1 (555) 876-5432", from: "Mike Chen", message: "Here's the quote you requested.", time: "2:45 PM", status: "Delivered" },
-  { id: 3, to: "+1 (555) 765-4321", from: "Emily Davis", message: "Reminder: Your appointment is tomorrow at 2pm.", time: "2:30 PM", status: "Delivered" },
-  { id: 4, to: "+1 (555) 654-3210", from: "James Wilson", message: "Thanks for your business!", time: "2:15 PM", status: "Read" },
-  { id: 5, to: "+1 (555) 543-2109", from: "Sarah Johnson", message: "Let me know if you have any questions.", time: "2:00 PM", status: "Read" },
-]
-
-const receivedMessages = [
-  { id: 1, from: "+1 (555) 123-4567", to: "Sarah Johnson", message: "Thanks for the follow-up! I'll review...", time: "2:45 PM", status: "Read" },
-  { id: 2, from: "+1 (555) 234-5678", to: "Mike Chen", message: "Can you send me the updated pricing sheet?", time: "2:30 PM", status: "Unread" },
-  { id: 3, from: "+1 (555) 456-7890", to: "James Wilson", message: "The demo went great! Let's schedule...", time: "12:30 PM", status: "Unread" },
-  { id: 4, from: "+1 (555) 345-6789", to: "Emily Davis", message: "Perfect, I'll see you at 3pm tomorrow.", time: "1:15 PM", status: "Read" },
-  { id: 5, from: "+1 (555) 567-8901", to: "Sarah Johnson", message: "I've attached the contract for review.", time: "11:45 AM", status: "Read" },
-]
 
 function getStatusBadge(status: string) {
   switch (status) {
@@ -156,8 +61,7 @@ function transformMessage(record: MessageRecord, type: 'sent' | 'received') {
 export default function MessagesPage() {
   const { data: messagesData, loading, error } = useMessages()
 
-  // Transform real data or use placeholder
-  const isConnected = !error && messagesData?.records && messagesData.records.length > 0
+  const isConnected = !error && error !== 'Not connected' && !!(messagesData?.records && messagesData.records.length > 0)
 
   const realSentMessages = messagesData?.records
     ?.filter(m => m.direction === 'Outbound')
@@ -167,23 +71,19 @@ export default function MessagesPage() {
     ?.filter(m => m.direction === 'Inbound')
     .map(m => transformMessage(m, 'received')) || []
 
-  // Use real or placeholder data
-  const displaySentMessages = isConnected ? realSentMessages : sentMessages
-  const displayReceivedMessages = isConnected ? realReceivedMessages : receivedMessages
-  const displayConversations = isConnected
-    ? [...realSentMessages, ...realReceivedMessages].slice(0, 6).map(msg => ({
-        ...msg,
-        lastMessage: msg.message,
-        unread: 0,
-      }))
-    : conversations
+  // Only show real data when connected
+  const displaySentMessages = realSentMessages
+  const displayReceivedMessages = realReceivedMessages
+  const displayConversations = [...realSentMessages, ...realReceivedMessages].slice(0, 6).map(msg => ({
+    ...msg,
+    lastMessage: msg.message,
+    unread: 0,
+  }))
 
   // Calculate stats
-  const totalSent = isConnected ? realSentMessages.length : 234
-  const totalReceived = isConnected ? realReceivedMessages.length : 189
-  const unreadCount = isConnected
-    ? messagesData?.records?.filter(m => m.readStatus === 'Unread').length || 0
-    : 12
+  const totalSent = realSentMessages.length
+  const totalReceived = realReceivedMessages.length
+  const unreadCount = messagesData?.records?.filter(m => m.readStatus === 'Unread').length || 0
 
   return (
     <SidebarProvider
@@ -217,7 +117,7 @@ export default function MessagesPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{totalSent}</div>
-                <p className="text-xs text-muted-foreground">{isConnected ? 'Last 30 days' : 'Sample data'}</p>
+                <p className="text-xs text-muted-foreground">{isConnected ? 'Last 30 days' : 'Connect RingCentral'}</p>
               </CardContent>
             </Card>
             <Card>
@@ -227,7 +127,7 @@ export default function MessagesPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{totalReceived}</div>
-                <p className="text-xs text-muted-foreground">{isConnected ? 'Last 30 days' : 'Sample data'}</p>
+                <p className="text-xs text-muted-foreground">{isConnected ? 'Last 30 days' : 'Connect RingCentral'}</p>
               </CardContent>
             </Card>
             <Card>
@@ -252,24 +152,22 @@ export default function MessagesPage() {
             </Card>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Message Volume</CardTitle>
-              <CardDescription>Messages sent and received this week</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={chartConfig} className="h-[200px] w-full">
-                <LineChart data={messagesByDay}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="day" />
-                  <YAxis />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line type="monotone" dataKey="sent" stroke="var(--color-sent)" strokeWidth={2} dot={{ r: 4 }} />
-                  <Line type="monotone" dataKey="received" stroke="var(--color-received)" strokeWidth={2} dot={{ r: 4 }} />
-                </LineChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
+          {isConnected && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Message Volume</CardTitle>
+                <CardDescription>Messages sent and received</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-center h-[200px] text-muted-foreground">
+                  {totalSent + totalReceived > 0
+                    ? `${totalSent} sent, ${totalReceived} received`
+                    : 'No messages yet'
+                  }
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <Tabs defaultValue="conversations" className="w-full">
             <TabsList>
@@ -379,6 +277,7 @@ export default function MessagesPage() {
           </Tabs>
         </div>
       </SidebarInset>
+      <RingCentralOverlay isConnected={isConnected} isLoading={loading} />
     </SidebarProvider>
   )
 }
